@@ -3,7 +3,7 @@ import "./index.css";
 import Search from "./components/Search";
 import MovieCard from "./components/MovieCard";
 import axios from 'axios';
-
+import { useDebounce } from "use-debounce";
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 
@@ -22,6 +22,7 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [movieList, setMovieList] = useState([]);
   const [isloading, setIsLoading] = useState(false);
+  const [debounceValue] = useDebounce(searchTerm, 1000)
 
 const fetchMovies = async (query = '') => {
   setIsLoading(true);
@@ -50,8 +51,8 @@ const fetchMovies = async (query = '') => {
 };
 
   useEffect(() => {
-    fetchMovies(searchTerm);
-  }, [searchTerm]);
+    fetchMovies(debounceValue);
+  }, [debounceValue]);
 
   return (
     <div className="pattern">
