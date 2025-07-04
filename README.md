@@ -108,9 +108,6 @@ The application's logic is straightforward but effective:
 ## 📂 Folder Structure
 
 ```
-Of course. Here is the directory structure from the image, formatted as a tree.
-
-```
 MOVIE-APP/
 ├── public/
 │   ├── hero-bg.png
