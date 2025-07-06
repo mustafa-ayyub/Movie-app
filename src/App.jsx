@@ -2,22 +2,10 @@ import React, { useEffect, useState } from "react";
 import "./index.css";
 import Search from "./components/Search";
 import MovieCard from "./components/MovieCard";
-import axios from "axios";
 import { useDebounce } from "use-debounce";
 import { getTrendingMovies, updateSearchCount } from "../appwrite";
-import { ClimbingBoxLoader } from "react-spinners";
-
-const API_BASE_URL = "https://api.themoviedb.org/3";
-
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-
-const API_OPTIONS = {
-  method: "GET",
-  headers: {
-    accept: "application/json",
-    Authorization: `Bearer ${API_KEY}`,
-  },
-};
+import { fetchMovies } from "../Utility/appWriteUtility";
+import PaginationButton from "./components/PaginationButton";
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,19 +17,12 @@ const App = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchMovies = async (query = "", page = 1) => {
+  const loadMovies = async (query = "", page = 1) => {
     setIsLoading(true);
     setErrorMessage("");
 
     try {
-      const endPoint = query
-        ? `${API_BASE_URL}/search/movie?query=${encodeURI(query)}&page=${page}`
-        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc&page=${page}`;
-      const response = await axios.get(endPoint, API_OPTIONS);
-
-      const data = response.data;
-      console.log();
-      console.log("Data is: ", data);
+      const data = await fetchMovies(query, page);
 
       if (data.Response === "False") {
         setErrorMessage(data.Error || "Failed to fetch the Movies");
@@ -72,7 +53,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    fetchMovies(debounceValue, currentPage);
+    loadMovies(debounceValue, currentPage);
   }, [debounceValue, currentPage]);
 
   useEffect(() => {
@@ -93,6 +74,7 @@ const App = () => {
             setSearchTerm={setSearchTerm}
           ></Search>
         </header>
+
         <section className="trending">
           <h2>Trending Movies</h2>
           <ul>
@@ -104,6 +86,7 @@ const App = () => {
             ))}
           </ul>
         </section>
+        
         <section className="all-movies">
           <h2 className="mt-[4 0px]">All Movies</h2>
           {isloading ? (
@@ -119,29 +102,11 @@ const App = () => {
             </ul>
           )}
           <div className="pagination-buttons mt-4 flex gap-4 justify-center">
-            <button
-              className={`text-white font-medium rounded-full text-lg px-5 py-2.5 text-center mb-2 ${
-                currentPage === 1
-                  ? "bg-purple-400 cursor-not-allowed opacity-50"
-                  : "bg-purple-700 hover:bg-purple-800 dark:bg-purple-600 dark:hover:bg-purple-700"
-              } focus:outline-none focus:ring-4 focus:ring-purple-300 dark:focus:ring-purple-900`}
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </button>
+            <PaginationButton  label="Previous" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} />
             <span className="text-white pt-2 text-lg">
               Page {currentPage} of {totalPages}
             </span>
-            <button
-              className="text-white bg-purple-700 hover:bg-purple-800 focus:outline-none focus:ring-4 focus:ring-purple-300 font-medium rounded-full text-lg px-5 py-2.5 text-center mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
+            <PaginationButton label="Next" onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} />
           </div>
         </section>
       </div>
