@@ -143,7 +143,7 @@ MOVIE-APP/
 This project has a solid foundation. Future improvements could include:
 
   - [ ] **User Authentication**: Allow users to create accounts and save their favorite movies.
-  - [ ] **Pagination**: Implement "load more" or numbered pages for search results.
+  - [X] **Pagination**: Implement "load more" or numbered pages for search results.
   - [ ] **Detailed Movie View**: Create a separate page or modal for movie details, trailers, and genres.
   - [ ] **Dark Mode**: Add a toggle for a dark color scheme.
   - [ ] **Improved Error Handling**: Add more specific error messages for API failures or no results.
