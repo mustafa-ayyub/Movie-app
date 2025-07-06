@@ -5,6 +5,7 @@ import MovieCard from "./components/MovieCard";
 import axios from "axios";
 import { useDebounce } from "use-debounce";
 import { getTrendingMovies, updateSearchCount } from "../appwrite";
+import { ClimbingBoxLoader } from "react-spinners";
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 
@@ -25,19 +26,22 @@ const App = () => {
   const [isloading, setIsLoading] = useState(false);
   const [debounceValue] = useDebounce(searchTerm, 1000);
   const [trendingMovies, setTrendingMovies] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchMovies = async (query = "") => {
+  const fetchMovies = async (query = "", page = 1) => {
     setIsLoading(true);
     setErrorMessage("");
 
     try {
       const endPoint = query
-        ? `${API_BASE_URL}/search/movie?query=${encodeURI(query)}`
-        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
+        ? `${API_BASE_URL}/search/movie?query=${encodeURI(query)}&page=${page}`
+        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc&page=${page}`;
       const response = await axios.get(endPoint, API_OPTIONS);
 
       const data = response.data;
-      console.log(data);
+      console.log();
+      console.log("Data is: ", data);
 
       if (data.Response === "False") {
         setErrorMessage(data.Error || "Failed to fetch the Movies");
@@ -46,6 +50,7 @@ const App = () => {
       }
 
       setMovieList(data.results || []);
+      setTotalPages(data.total_pages);
       if (query && data.results.length > 0) {
         await updateSearchCount(query, data.results[0]);
       }
@@ -67,8 +72,8 @@ const App = () => {
   };
 
   useEffect(() => {
-    fetchMovies(debounceValue);
-  }, [debounceValue]);
+    fetchMovies(debounceValue, currentPage);
+  }, [debounceValue, currentPage]);
 
   useEffect(() => {
     loadTrendingMovies();
@@ -110,8 +115,34 @@ const App = () => {
               {movieList.map((movie) => (
                 <MovieCard key={movie.id} movie={movie} />
               ))}
+              {console.log("Movie List: ", movieList)}
             </ul>
           )}
+          <div className="pagination-buttons mt-4 flex gap-4 justify-center">
+            <button
+              className={`text-white font-medium rounded-full text-lg px-5 py-2.5 text-center mb-2 ${
+                currentPage === 1
+                  ? "bg-purple-400 cursor-not-allowed opacity-50"
+                  : "bg-purple-700 hover:bg-purple-800 dark:bg-purple-600 dark:hover:bg-purple-700"
+              } focus:outline-none focus:ring-4 focus:ring-purple-300 dark:focus:ring-purple-900`}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            <span className="text-white pt-2 text-lg">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              className="text-white bg-purple-700 hover:bg-purple-800 focus:outline-none focus:ring-4 focus:ring-purple-300 font-medium rounded-full text-lg px-5 py-2.5 text-center mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
+          </div>
         </section>
       </div>
     </div>
